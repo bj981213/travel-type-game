@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="跟著一趟四天的旅程回答 12 題，測出你是 8 種旅人中的哪一種，並推薦目的地與旅遊書。">
+<meta property="og:title" content="出發吧！你是哪種旅人？">
+<meta property="og:description" content="跟著一趟四天的旅程回答 12 題，測出你是 8 種旅人中的哪一種，並推薦目的地與旅遊書。">
+<meta name="theme-color" content="#163a30">
+<title>出發吧！你是哪種旅人？</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&family=VT323&display=swap">
+<style>
+/* Layout: one phone-width column like a passport held in hand — route strip, pixel scene window, boarding-pass answer tickets; result is a passport visa page. */
+:root{
+  --cover:#163a30;      /* ROC passport green */
+  --cover-2:#1f4b3e;
+  --cover-line:#2f6352;
+  --gold:#d8b25a;       /* passport foil */
+  --paper:#eef0e6;      /* boarding-pass stock */
+  --paper-2:#e2e6d8;
+  --ink:#1b2823;
+  --ink-soft:#4f5f57;
+  --stamp:#c0473a;      /* red visa ink */
+  --stamp-blue:#2e5c8c; /* blue entry-stamp ink */
+  --mist:#9fb6aa;
+  --f-disp:"LXGW WenKai TC","Kaiti TC","STKaiti","Noto Sans TC","PingFang TC","Microsoft JhengHei",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-code:"VT323",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--cover);color:var(--paper);font-family:var(--f-body);font-size:15px;line-height:1.6;-webkit-tap-highlight-color:transparent}
+body{background-image:radial-gradient(circle at 50% -10%,var(--cover-2),var(--cover) 60%);background-attachment:fixed}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+a{color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:14px 32px;display:flex;flex-direction:column;gap:14px;min-height:100%}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-code);font-size:20px;letter-spacing:2px;color:var(--gold);line-height:1}
+.brand small{color:var(--mist);font-size:16px;letter-spacing:1px;margin-left:6px}
+.ghost{background:none;border:1px solid var(--cover-line);border-radius:999px;padding:4px 12px;font-size:13px;color:var(--mist)}
+.ghost:hover{color:var(--paper);border-color:var(--mist)}
+
+/* route strip */
+.route{position:relative;display:grid;grid-template-columns:repeat(6,1fr);align-items:start;padding-top:4px}
+.route::before{content:"";position:absolute;left:8.33%;right:8.33%;top:11px;border-top:2px dashed var(--cover-line)}
+.route .fill{position:absolute;left:8.33%;top:10px;height:4px;background:var(--gold);border-radius:2px;transition:width .5s ease}
+.stop{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--mist);text-align:center}
+.stop i{width:14px;height:14px;border-radius:50%;background:var(--cover);border:2px solid var(--cover-line);display:block;transition:all .3s}
+.stop.done i{background:var(--gold);border-color:var(--gold)}
+.stop.now i{border-color:var(--gold);box-shadow:0 0 0 4px rgba(216,178,90,.25)}
+.stop.now{color:var(--paper)}
+
+/* scene window */
+.scene{position:relative;border-radius:14px;overflow:hidden;border:2px solid var(--cover-line);background:#0d1f1a;aspect-ratio:16/9;max-width:100%}
+.scene canvas{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.scene .tag{position:absolute;left:10px;top:8px;font-family:var(--f-code);font-size:18px;line-height:1;letter-spacing:1px;color:var(--paper);background:rgba(13,31,26,.72);padding:4px 8px;border-radius:6px}
+
+/* question */
+.q{display:flex;flex-direction:column;gap:12px}
+.q .eyebrow{font-family:var(--f-code);font-size:18px;letter-spacing:1.5px;color:var(--gold);line-height:1}
+.q h2{font-family:var(--f-disp);font-weight:700;font-size:clamp(21px,5.4vw,26px);line-height:1.45;margin:0;text-wrap:balance;min-height:2.9em}
+.opts{display:flex;flex-direction:column;gap:10px}
+.ticket{display:grid;grid-template-columns:44px 1fr;align-items:stretch;text-align:left;background:var(--paper);color:var(--ink);border:0;border-radius:10px;padding:0;overflow:hidden;position:relative;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s,box-shadow .2s}
+.ticket.in{opacity:1;transform:none}
+.ticket .stub{font-family:var(--f-code);font-size:24px;display:grid;place-items:center;background:var(--paper-2);color:var(--stamp-blue);border-right:2px dashed #b9c0ad}
+.ticket .txt{padding:12px 14px;font-size:15.5px;line-height:1.55;min-width:0}
+.ticket:hover{box-shadow:0 0 0 2px var(--gold)}
+.ticket.picked .stub{background:var(--stamp);color:var(--paper)}
+.ticket.picked::after{content:"已選";position:absolute;right:12px;top:50%;transform:translateY(-50%) rotate(-12deg);font-family:var(--f-disp);font-weight:700;color:var(--stamp);border:2px solid var(--stamp);border-radius:6px;padding:0 6px;font-size:14px;animation:thunk .25s ease-out}
+@keyframes thunk{from{transform:translateY(-50%) rotate(-12deg) scale(1.8);opacity:0}to{transform:translateY(-50%) rotate(-12deg) scale(1);opacity:1}}
+.qfoot{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mist)}
+
+/* title screen */
+.hero{display:flex;flex-direction:column;gap:16px}
+.pass{background:var(--paper);color:var(--ink);border-radius:14px;display:grid;grid-template-columns:1fr 92px;overflow:hidden}
+.pass .main{padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pass .side{background:var(--paper-2);border-left:2px dashed #b9c0ad;padding:14px 10px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:8px;font-family:var(--f-code);color:var(--ink-soft);font-size:15px;text-align:center;line-height:1.1}
+.pass .side b{font-size:30px;color:var(--ink);font-weight:400}
+.lbl{font-family:var(--f-code);font-size:15px;letter-spacing:1.5px;color:var(--ink-soft);line-height:1}
+.fromto{display:flex;align-items:center;gap:10px;font-family:var(--f-code);font-size:44px;line-height:1;color:var(--ink)}
+.fromto span:nth-child(2){font-size:22px;color:var(--stamp-blue)}
+.fromto .unk{color:var(--stamp)}
+.hero h1{font-family:var(--f-disp);font-weight:700;font-size:clamp(28px,8vw,38px);line-height:1.25;margin:0;text-wrap:balance}
+.hero p{margin:0;color:var(--ink-soft);font-size:14.5px}
+.go{background:var(--gold);color:var(--ink);border:0;border-radius:12px;padding:14px 18px;font-family:var(--f-disp);font-weight:700;font-size:20px;display:flex;justify-content:center;gap:10px;align-items:center}
+.go:hover{filter:brightness(1.06)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--mist)}
+.stamps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mini{border:1.5px solid var(--cover-line);border-radius:10px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:2px;background:none}
+.mini b{font-family:var(--f-code);font-weight:400;font-size:22px;line-height:1;color:var(--gold);letter-spacing:1px}
+.mini span{font-family:var(--f-disp);font-size:14px;line-height:1.3}
+.mini.me{border-color:var(--gold);background:rgba(216,178,90,.12)}
+
+/* result: passport visa page */
+.visa{background:var(--paper);color:var(--ink);border-radius:16px;padding:20px 18px 22px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden}
+.visa::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(46,92,140,.045) 0 2px,transparent 2px 9px);pointer-events:none}
+.visa > *{position:relative}
+.vhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.code{font-family:var(--f-code);font-size:84px;line-height:.8;letter-spacing:4px;color:var(--ink)}
+.vname{font-family:var(--f-disp);font-weight:700;font-size:34px;line-height:1.2;margin:4px 0 0}
+.vaxes{font-size:13px;color:var(--ink-soft)}
+.seal{flex:none;width:96px;height:96px;border:3px double var(--stamp);border-radius:50%;display:grid;place-items:center;text-align:center;color:var(--stamp);font-family:var(--f-disp);font-weight:700;font-size:15px;line-height:1.25;transform:rotate(-14deg);animation:seal .5s cubic-bezier(.2,1.6,.4,1) both .15s}
+.seal small{display:block;font-family:var(--f-code);font-weight:400;font-size:14px;letter-spacing:1px}
+@keyframes seal{from{transform:rotate(-14deg) scale(2.2);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:1}}
+.vdesc{font-family:var(--f-disp);font-size:19px;line-height:1.6;margin:0}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec h3{margin:0;font-family:var(--f-code);font-weight:400;font-size:18px;letter-spacing:1.5px;color:var(--stamp-blue);display:flex;gap:8px;align-items:baseline}
+.sec h3 span{font-family:var(--f-body);font-size:13px;letter-spacing:0;color:var(--ink-soft)}
+.axis{display:grid;grid-template-columns:4.6em 1fr 4.6em;align-items:center;gap:8px;font-size:13px}
+.axis .l{text-align:right}
+.axis .track{height:10px;background:var(--paper-2);border-radius:5px;position:relative;overflow:hidden}
+.axis .track i{position:absolute;top:0;bottom:0;background:var(--stamp-blue);border-radius:5px}
+.axis .track::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1.5px solid var(--ink-soft);opacity:.5}
+.axis .on{font-weight:700;color:var(--ink)}
+.axis .off{color:var(--ink-soft)}
+.dests{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dest{border:1.5px solid #c8cdbd;border-radius:10px;padding:10px 8px;display:flex;flex-direction:column;gap:4px;min-width:0;background:rgba(255,255,255,.35)}
+.dest .lbl{font-size:13px}
+.dest b{font-family:var(--f-disp);font-size:17px;line-height:1.3}
+.books{display:flex;flex-direction:column;gap:10px}
+.book{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:start;text-decoration:none;padding:10px;border-radius:10px;background:rgba(255,255,255,.45);border:1.5px solid #d3d8c8}
+.book:hover{border-color:var(--stamp-blue)}
+.spine{width:46px;height:66px;border-radius:3px 6px 6px 3px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-family:var(--f-disp);font-weight:700;font-size:12px;letter-spacing:2px;color:#fff;box-shadow:inset 4px 0 0 rgba(0,0,0,.18)}
+.book .bt{font-weight:700;font-size:15px;line-height:1.45;color:var(--ink)}
+.book .bm{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.book .bb{font-size:13.5px;color:var(--ink);margin-top:4px}
+.book .go-link{font-size:12.5px;color:var(--stamp-blue);margin-top:4px;font-weight:500}
+.book > div{min-width:0}
+.more{align-self:flex-start;background:none;border:1.5px solid var(--ink-soft);color:var(--ink);border-radius:999px;padding:4px 14px;font-size:13px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pair > div{border-radius:10px;padding:10px 12px;background:rgba(255,255,255,.45);border:1.5px solid #d3d8c8;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pair b{font-family:var(--f-disp);font-size:18px}
+.pair p{margin:0;font-size:13px;color:var(--ink-soft)}
+.acts{display:flex;flex-wrap:wrap;gap:10px}
+.acts button{flex:1 1 140px;border-radius:12px;padding:12px 14px;font-weight:700;border:0}
+.acts .primary{background:var(--gold);color:var(--ink)}
+.acts .secondary{background:none;border:1.5px solid var(--mist);color:var(--paper)}
+.toast{font-size:13px;color:var(--gold);min-height:1.4em}
+.foot{font-size:12px;color:var(--mist);line-height:1.6}
+.foot a{color:var(--paper)}
+@media (max-width:400px){
+  .dests{grid-template-columns:1fr}
+  .code{font-size:68px}
+  .seal{width:80px;height:80px;font-size:13px}
+  .stamps{grid-template-columns:repeat(2,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <div class="bar">
+    <div class="brand">TRAVELER<small>旅人登機</small></div>
+    <button class="ghost" id="snd" type="button" aria-pressed="true">音效 開</button>
+  </div>
+  <div id="view"></div>
+  <div class="foot" id="foot">書目資料取自<a href="https://www.cite.com.tw/" target="_blank" rel="noopener">城邦讀書花園</a>（2026-10-15 整理）。推薦語與分類為示範草稿。本遊戲為 AI 課程示範原型，非城邦官方活動。</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const TYPES = {"PCS": {"name": "行程總召", "axes": "計畫控 × 舒適圈 × 揪團型", "desc": "Excel 排到分鐘、訂位全包，大家跟著你走就對了。", "tags": "經典景點、交通便利、親子、帶長輩、自由行攻略", "dest": ["東京（國外）", "京阪神（國外）", "宜蘭（國內）"], "books": [{"rank": 1, "title": "東京攻略完全制霸2026", "pub": "墨刻", "author": "林于心、墨刻編輯部", "date": "2025-10-07", "url": "https://www.cite.com.tw/book?id=105053", "dest": "東京", "blurb": "東京吃喝玩買一次掌握，幫全團排行程的最強後盾。"}, {"rank": 2, "title": "京都‧大阪‧神戶攻略完全制霸2026", "pub": "墨刻", "author": "張淑婷、墨刻編輯部", "date": "2025-11-04", "url": "https://www.cite.com.tw/book?id=105347", "dest": "京阪神", "blurb": "上千個京阪神景點，附地圖別冊，分頭行動也不怕走散。"}, {"rank": 3, "title": "超簡單！全日本排行程：9大區域x 60條路線x499+食購遊宿一次串聯！", "pub": "墨刻", "author": "墨刻編輯部", "date": "2025-12-18", "url": "https://www.cite.com.tw/book?id=105856", "dest": "全日本", "blurb": "60 條現成路線，照著排就能交出漂亮行程表。"}, {"rank": 4, "title": "無痛帶爸媽遊首爾：行程不踩雷，從廁所、飲食到坡度，Ｊ人隊友給你的安心指南", "pub": "貓頭鷹出版社", "author": "果媽、林果", "date": "2026-04-09", "url": "https://www.cite.com.tw/book?id=107095", "dest": "首爾", "blurb": "連廁所和坡度都幫你想好，帶爸媽出國的安心手冊。"}, {"rank": 5, "title": "帶孩子去沖繩超好玩100：親子遊QA全攻略！", "pub": "創意市集", "author": "塔塔懷特", "date": "2026-07-14", "url": "https://www.cite.com.tw/book?id=108249", "dest": "沖繩", "blurb": "100 個親子 QA，帶小孩出門的總召必備。"}]}, "PCL": {"name": "安心散步家", "axes": "計畫控 × 舒適圈 × 獨旅型", "desc": "路線先規劃好，到了現場慢慢走、慢慢看，不趕行程。", "tags": "散步路線、大字地圖、經典城市、交通票券", "dest": ["東京（國外）", "義大利（國外）", "台南（國內）"], "books": [{"rank": 1, "title": "東京散策地圖全攻略：免排行程×依體力選路×QR CODE導航！剛剛好的32條散步提案", "pub": "墨刻", "author": "朝日新聞出版", "date": "2026-03-31", "url": "https://www.cite.com.tw/book?id=106990", "dest": "東京", "blurb": "32 條散步路線依體力挑選，一個人也能走得剛剛好。"}, {"rank": 2, "title": "大人的旅行：沖繩", "pub": "墨刻", "author": "王靖婷、墨刻編輯部", "date": "2026-09-17", "url": "https://www.cite.com.tw/book?id=109037", "dest": "沖繩", "blurb": "大字排版加散步路線，照著走就不會錯過亮點。"}, {"rank": 3, "title": "大人的旅行：義大利──羅馬‧佛羅倫斯‧威尼斯‧米蘭‧梵諦岡", "pub": "墨刻", "author": "李美蒨．墨刻編輯部", "date": "2026-09-22", "url": "https://www.cite.com.tw/book?id=109089", "dest": "義大利", "blurb": "四大城市串成完整動線，深度慢旅的入門書。"}, {"rank": 4, "title": "JR PASS西日本全攻略：關西‧北陸‧四國‧山陰山陽‧九州", "pub": "墨刻", "author": "蔡嘉榛、墨刻編輯部", "date": "2026-06-09", "url": "https://www.cite.com.tw/book?id=107835", "dest": "西日本", "blurb": "20 種 PASS 怎麼選一次看懂，計畫控最愛的省錢工具書。"}]}, "PAS": {"name": "遠征隊長", "axes": "計畫控 × 冒險家 × 揪團型", "desc": "目標越遠越好，但功課一定做足，帶著朋友一起去看世界奇景。", "tags": "壯麗自然、古文明、跨國路線、深度採訪", "dest": ["冰島（國外）", "埃及（國外）", "花蓮太魯閣（國內）"], "books": [{"rank": 1, "title": "冰島", "pub": "墨刻", "author": "李曉萍、墨刻編輯部", "date": "2026-08-11", "url": "https://www.cite.com.tw/book?id=108598", "dest": "冰島", "blurb": "冰川、火山、冰洞，一群人一起去完成的冰與火冒險。"}, {"rank": 2, "title": "埃及", "pub": "墨刻", "author": "翁紫曦、墨刻編輯部", "date": "2026-01-20", "url": "https://www.cite.com.tw/book?id=106256", "dest": "埃及", "blurb": "大埃及博物館開館直擊，這輩子一定要去一次的古文明。"}, {"rank": 3, "title": "西班牙‧葡萄牙‧摩洛哥", "pub": "墨刻", "author": "蔣育荏、李曉萍、陳蓓蕾．墨刻編輯部", "date": "2026-04-16", "url": "https://www.cite.com.tw/book?id=107208", "dest": "西葡摩", "blurb": "一次橫跨歐非三國，適合帶隊規劃的長程大旅行。"}, {"rank": 4, "title": "紐西蘭", "pub": "墨刻", "author": "趙思語、墨刻編輯部", "date": "2025-11-13", "url": "https://www.cite.com.tw/book?id=105411", "dest": "紐西蘭", "blurb": "南北島自然奇景加毛利文化，揪團自駕的經典路線。"}]}, "PAL": {"name": "秘境獵人", "axes": "計畫控 × 冒險家 × 獨旅型", "desc": "做足功課，只為去沒什麼人去的地方。", "tags": "小眾國度、健行、鐵道、私房路線", "dest": ["波羅的海三小國（國外）", "東京近郊低山（國外）", "台灣秘境鐵道（國內）"], "books": [{"rank": 1, "title": "波羅的海三小國：愛沙尼亞‧拉脫維亞‧立陶宛 Baltic Countries", "pub": "墨刻", "author": "地球の步き方編集室", "date": "2026-06-02", "url": "https://www.cite.com.tw/book?id=107720", "dest": "波羅的海三小國", "blurb": "還沒被觀光人潮發現的北歐小國，秘境獵人的下一站。"}, {"rank": 2, "title": "克羅埃西亞‧斯洛維尼亞‧蒙特內哥羅", "pub": "墨刻", "author": "翁紫曦、墨刻編輯部", "date": "2026-04-09", "url": "https://www.cite.com.tw/book?id=107110", "dest": "巴爾幹半島", "blurb": "亞得里亞海的古城與自然奇景，跳出巴黎羅馬的另一個歐洲。"}, {"rank": 3, "title": "看見富士山，剛剛好的低山健行：56條展望路線", "pub": "積木文化", "author": "渡邉明博(Watanabe Akihiro)", "date": "2026-04-28", "url": "https://www.cite.com.tw/book?id=107305", "dest": "東京近郊", "blurb": "兩小時登頂看富士山，不用人擠人的輕量健行。"}, {"rank": 4, "title": "原來有這站：台灣秘境鐵道旅【經典暢銷版】", "pub": "創意市集", "author": "許傑", "date": "2026-01-20", "url": "https://www.cite.com.tw/book?id=106228", "dest": "台灣", "blurb": "66 個最美鐵道小站，原來台灣也有這麼多秘境。"}]}, "FCS": {"name": "吃貨團長", "axes": "隨興派 × 舒適圈 × 揪團型", "desc": "行程不重要，下一餐吃什麼才重要。", "tags": "美食、市場、城市漫遊、點餐指南", "dest": ["首爾（國外）", "越南 河內／胡志明市（國外）", "台灣小吃巡禮（國內）"], "books": [{"rank": 1, "title": "鬧著玩：用這樣的方式吃台灣", "pub": "墨刻", "author": "鬧著玩(NowYouOn)", "date": "2025-11-25", "url": "https://www.cite.com.tw/book?id=105590", "dest": "台灣", "blurb": "跟著最會吃的主持天團，揪朋友吃遍隱藏版台灣。"}, {"rank": 2, "title": "【全圖解】日本點餐超簡單：24類美食×吃喝實戰指南", "pub": "墨刻", "author": "彭欣喬、墨刻編輯部", "date": "2025-08-12", "url": "https://www.cite.com.tw/book?id=104483", "dest": "日本", "blurb": "不懂日文也能點對菜，吃貨團長的隨身翻譯。"}, {"rank": 3, "title": "大首爾攻略完全制霸", "pub": "墨刻", "author": "李聖依・墨刻編輯部", "date": "2026-09-15", "url": "https://www.cite.com.tw/book?id=109017", "dest": "首爾", "blurb": "首爾最新吃喝玩樂情報，邊逛邊吃的城市指南。"}, {"rank": 4, "title": "越南：河內‧胡志明市‧順化‧會安", "pub": "墨刻", "author": "墨刻編輯部", "date": "2024-01-04", "url": "https://www.cite.com.tw/book?id=98489", "dest": "越南", "blurb": "河粉、法國麵包、越式咖啡，一本帶你從河內吃到胡志明市。"}, {"rank": 5, "title": "泰國慢旅行程：美食購物×文創市集×歷史老城×海島享樂", "pub": "創意市集", "author": "亞美將(鄧莉穎)", "date": "2025-08-05", "url": "https://www.cite.com.tw/book?id=104372", "dest": "泰國", "blurb": "曼谷到清邁的市集與美食，20 多條一日度假路線。"}, {"rank": 6, "title": "澳門小旅行：世界遺產X旅店潮玩X離島漫遊X中葡小吃X巷弄私旅再發現", "pub": "創意市集", "author": "克里斯．李", "date": "2026-01-15", "url": "https://www.cite.com.tw/book?id=106186", "dest": "澳門", "blurb": "週末說走就走，中葡小吃一路吃到離島。"}]}, "FCL": {"name": "慢活文青", "axes": "隨興派 × 舒適圈 × 獨旅型", "desc": "一間喫茶店可以坐一下午，旅行是為了把時間還給自己。", "tags": "獨旅、喫茶、老屋、職人、散文", "dest": ["京都（國外）", "越南 會安（國外）", "嘉義（國內）"], "books": [{"rank": 1, "title": "獨旅真好：探訪民藝、器皿、藝術與地方小鎮的日本之旅", "pub": "麥浩斯", "author": "Ｍaro(まろ，獨處時光製作人)", "date": "2026-05-12", "url": "https://www.cite.com.tw/book?id=107430", "dest": "日本地方小鎮", "blurb": "按自己的步調走走停停，一個人出發也可以剛剛好。"}, {"rank": 2, "title": "人潮之外，走靜京都：走入在地人的69處日常角落", "pub": "墨刻", "author": "大橋知沙", "date": "2026-01-06", "url": "https://www.cite.com.tw/book?id=105854", "dest": "京都", "blurb": "避開人潮，走進京都職人與老鋪的安靜日常。"}, {"rank": 3, "title": "嘉義時光：漫步百年町區與街角老屋", "pub": "創意市集", "author": "黑崎時代", "date": "2026-10-01", "url": "https://www.cite.com.tw/book?id=109087", "dest": "嘉義", "blurb": "老屋咖啡加傳統市場，慢慢散步的嘉義一日生活。"}, {"rank": 4, "title": "南向跫音：你一定要認識的越南（全新編排增訂版）", "pub": "貓頭鷹出版社", "author": "洪德青", "date": "2023-11-23", "url": "https://www.cite.com.tw/book?id=98045", "dest": "越南", "blurb": "從風俗、藝術到日常，慢慢認識會安古城背後的越南。"}, {"rank": 5, "title": "日本喫茶時光繪集：從昭和浪漫到復古摩登，老派咖啡店的建築巡禮", "pub": "創意市集", "author": "塩谷步波", "date": "2026-09-15", "url": "https://www.cite.com.tw/book?id=108562", "dest": "日本", "blurb": "手繪剖面圖帶你走進昭和喫茶店，文青必收的圖集。"}, {"rank": 6, "title": "東京，謝謝款待：那些隱藏在市町巷弄的暖心滋味", "pub": "創意市集", "author": "Miho（ミホ）", "date": "2026-02-26", "url": "https://www.cite.com.tw/book?id=106651", "dest": "東京", "blurb": "旅居東京 13 年的作家，寫巷弄裡的暖心滋味。"}]}, "FAS": {"name": "跳島玩咖", "axes": "隨興派 × 冒險家 × 揪團型", "desc": "說走就走、揪了就出發，海島、跳島、戶外活動都來。", "tags": "海島、跳島、戶外、熱鬧城市", "dest": ["沖繩離島（國外）", "澳洲（國外）", "澎湖（國內）"], "books": [{"rank": 1, "title": "沖繩離島：石垣島‧宮古島‧竹富島‧西表島", "pub": "墨刻", "author": "朝日新聞出版", "date": "2026-07-02", "url": "https://www.cite.com.tw/book?id=108098", "dest": "沖繩離島", "blurb": "藍到不真實的海，揪朋友來一趟跳島慢旅。"}, {"rank": 2, "title": "澳洲", "pub": "墨刻", "author": "趙思語", "date": "2026-01-13", "url": "https://www.cite.com.tw/book?id=106153", "dest": "澳洲", "blurb": "雨林、海灘、大城市一次滿足，適合一群人去探險。"}, {"rank": 3, "title": "釜山‧大邱攻略完全制霸", "pub": "墨刻", "author": "呂宛霖、墨刻編輯部", "date": "2026-03-17", "url": "https://www.cite.com.tw/book?id=106861", "dest": "釜山", "blurb": "海景膠囊列車、海雲臺夜生活，週末就能衝的海港城市。"}, {"rank": 4, "title": "土耳其", "pub": "墨刻", "author": "翁紫曦、墨刻編輯部", "date": "2026-05-21", "url": "https://www.cite.com.tw/book?id=107603", "dest": "土耳其", "blurb": "熱氣球、古文明、市集，一路都是驚喜的歐亞大冒險。"}]}, "FAL": {"name": "流浪貓", "axes": "隨興派 × 冒險家 × 獨旅型", "desc": "沒訂住宿也睡得很好，一個人走到地圖的盡頭。", "tags": "長旅、背包客、旅行文學、邊境", "dest": ["印度（國外）", "中亞哈薩克（國外）", "台東（國內）"], "books": [{"rank": 1, "title": "騎往世界的盡頭，我只帶自由上路：一個人，一台車，142天，縱貫南美16000公里摩托車之旅", "pub": "商周出版", "author": "黃禹森", "date": "2025-12-02", "url": "https://www.cite.com.tw/book?id=105583", "dest": "南美洲", "blurb": "一個人一台車 142 天，流浪貓的終極夢想。"}, {"rank": 2, "title": "印度放浪", "pub": "馬可孛羅", "author": "藤原新也(SHINYA FUJIWARA)", "date": "2025-07-29", "url": "https://www.cite.com.tw/book?id=104137", "dest": "印度", "blurb": "日本攝影大師的青春放浪記，經典旅行文學。"}, {"rank": 3, "title": "覓境：哈薩克Another Land : Kazakhstan", "pub": "麥田", "author": "李昆霖、昆禮文(Patrick Quinlivan)、羅銘夏", "date": "2026-07-30", "url": "https://www.cite.com.tw/book?id=108431", "dest": "哈薩克", "blurb": "三個去過上百國的旅人，走進還很陌生的中亞。"}, {"rank": 4, "title": "看見，心西藏【暢銷增訂版】：深度探訪大西藏全境之美", "pub": "商周出版", "author": "孫宜君", "date": "2026-01-06", "url": "https://www.cite.com.tw/book?id=106073", "dest": "西藏", "blurb": "轉山轉湖，在世界之巔找回自己的節奏。"}, {"rank": 5, "title": "印度模樣：世界遺產×文化解密×帝國風情×五感淨化療癒", "pub": "創意市集", "author": "黃偉雯", "date": "2026-04-28", "url": "https://www.cite.com.tw/book?id=107287", "dest": "印度", "blurb": "10 多條自助路線，敢去印度的人的實用指南。"}]}};
+
+/* ---------- 題目：6 站 × 2 題；w = 計分（p 計畫 / a 冒險 / s 揪團，負值為另一端） ---------- */
+const STOPS = [
+  {key:'night',  name:'出發前一晚', code:'HOME', tag:'D-1 23:40'},
+  {key:'airport',name:'機場',       code:'TPE',  tag:'GATE B7'},
+  {key:'arrive', name:'抵達',       code:'ARR',  tag:'DAY 1 10:15'},
+  {key:'lunch',  name:'午餐',       code:'EAT',  tag:'DAY 2 12:30'},
+  {key:'rain',   name:'意外',       code:'WX',   tag:'DAY 3 15:00'},
+  {key:'last',   name:'最後一晚',   code:'LAST', tag:'DAY 4 21:00'},
+];
+const QS = [
+  {stop:0, q:'明天一早的飛機。現在，你的行李打包到哪一步了？', o:[
+    {t:'照清單全部打包好，還分袋貼了標籤。', w:{p:2}},
+    {t:'大概塞一塞就好，忘了的到當地再買。', w:{p:-2}},
+    {t:'先在群組問旅伴帶了什麼，避免大家重複帶。', w:{s:1}} ]},
+  {stop:0, q:'這趟的行程表，你做到什麼程度？', o:[
+    {t:'每天幾點到哪都寫好了，連下雨備案都有。', w:{p:2}},
+    {t:'只列了幾個一定要去的經典景點。', w:{p:-1,a:-1}},
+    {t:'沒有行程表。落地再說，路上自然會遇到。', w:{p:-2,a:1}} ]},
+  {stop:1, q:'登機門廣播：「班機延誤三小時。」你會……', o:[
+    {t:'立刻查補償方案，順便把第一天的行程往後挪。', w:{p:2}},
+    {t:'找間安靜的咖啡店坐下，一個人看書等。', w:{a:-1,s:-1}},
+    {t:'跟旁邊同樣被延誤的旅客聊起來，交換旅遊情報。', w:{s:2,a:1}} ]},
+  {stop:1, q:'終於要登機了。上飛機前的最後一件事？', o:[
+    {t:'確認離線地圖和翻譯 App 都下載好了。', w:{p:1,a:-1}},
+    {t:'在群組裡喊一聲：「大家出發囉！」', w:{s:2}},
+    {t:'戴上耳機，屬於自己的時間開始了。', w:{s:-2}} ]},
+  {stop:2, q:'走出入境大廳，你的第一件事是？', o:[
+    {t:'照計畫搭事先查好的交通，直接去飯店放行李。', w:{p:2,a:-1}},
+    {t:'先找附近評價不錯的餐廳，坐下來吃頓飯。', w:{p:-1,a:-1}},
+    {t:'隨便跳上一班公車，看看它會開到哪裡。', w:{a:2,p:-1}} ]},
+  {stop:2, q:'這幾天的住宿，你選的是？', o:[
+    {t:'熟悉的連鎖飯店，品質穩定最安心。', w:{a:-2}},
+    {t:'在地人經營的民宿，可以跟老闆聊天。', w:{s:1,a:1}},
+    {t:'還沒訂。看當天走到哪，再找青旅或背包客棧。', w:{a:2,p:-1}} ]},
+  {stop:3, q:'午餐時間到了，你會走進哪一間？', o:[
+    {t:'網路評價第一名的名店，排隊也值得。', w:{a:-1}},
+    {t:'巷口一間沒有中文菜單、坐滿當地人的小店。', w:{a:2}},
+    {t:'大家想吃的不一樣，就各自找熟悉的店解決。', w:{s:-2,a:-1}} ]},
+  {stop:3, q:'吃飽了。下午要做什麼？', o:[
+    {t:'大家一起投票決定，少數服從多數。', w:{s:2}},
+    {t:'自己去逛一直想去的美術館或書店。', w:{s:-2,a:-1}},
+    {t:'看到哪條路有趣就鑽進去，走到哪算哪。', w:{p:-2,a:1}} ]},
+  {stop:4, q:'突然下起大雨，原本的戶外行程泡湯了。', o:[
+    {t:'打開備案清單，改去室內景點。', w:{p:2}},
+    {t:'回住處睡個午覺，旅行本來就該放鬆。', w:{a:-2}},
+    {t:'穿上雨衣照走，雨中的街道也很好看。', w:{a:2}} ]},
+  {stop:4, q:'雨停了，一位當地人邀你參加今晚的社區祭典。', o:[
+    {t:'當然去！還要把旅伴一起拉去。', w:{s:2,a:1}},
+    {t:'有點心動，但不熟的場合還是算了。', w:{a:-2}},
+    {t:'自己一個人溜進去，安靜地感受氣氛。', w:{a:1,s:-2}} ]},
+  {stop:5, q:'旅程的最後一晚，你會怎麼過？', o:[
+    {t:'和大家吃一頓大餐，再拍一張大合照。', w:{s:2,a:-1}},
+    {t:'一個人去看夜景，安靜地把這幾天想一遍。', w:{s:-2}},
+    {t:'臨時決定改機票，再多留一天。', w:{p:-2,a:1}} ]},
+  {stop:5, q:'最後，你從這趟旅行帶回了什麼？', o:[
+    {t:'照清單買齊的伴手禮，每個人都有份。', w:{p:2}},
+    {t:'一本當地的書，回家再慢慢回味。', w:{s:-1,a:-1}},
+    {t:'什麼都沒買，只帶回一大堆故事。', w:{p:-1,a:1}} ]},
+];
+const AX = [
+  {k:'p', pos:'P', neg:'F', posL:'計畫控', negL:'隨興派'},
+  {k:'a', pos:'A', neg:'C', posL:'冒險家', negL:'舒適圈'},
+  {k:'s', pos:'S', neg:'L', posL:'揪團型', negL:'獨旅型'},
+];
+const ORDER = ['PCS','PCL','PAS','PAL','FCS','FCL','FAS','FAL'];
+const TIPS = {
+  PCS:'留一個下午不排行程，讓旅伴也有機會帶你去他想去的地方。',
+  PCL:'把一兩個景點換成「坐下來」的時間，散步家的旅行不必每站都打卡。',
+  PAS:'遠征的行程記得留緩衝日，體力和簽證都是隊長要顧的事。',
+  PAL:'秘境常常沒有訊號，出發前把離線地圖和緊急聯絡方式都備好。',
+  FCS:'先查好當地的用餐禮儀和營業時間，吃貨也怕撲空。',
+  FCL:'慢活的旅行很適合帶一本書，在咖啡店裡讀完它。',
+  FAS:'海島活動看天氣，揪團前先約好下雨的 B 計畫。',
+  FAL:'再隨興也要讓家人知道你大概在哪裡，報平安是流浪貓的基本功。',
+};
+const PUB_COLOR = {'墨刻':'#2e5c8c','創意市集':'#c0473a','商周出版':'#6a4d8f','麥田':'#8a5a2b','麥浩斯':'#3f7a5c','積木文化':'#a0622d','貓頭鷹出版社':'#4d5b6a','馬可孛羅':'#7a3b4a'};
+const flip = (code, i) => code.split('').map((c,j)=>{ if(!i.includes(j)) return c; const a=AX[j]; return c===a.pos?a.neg:a.pos; }).join('');
+
+/* ---------- 狀態 ---------- */
+let S = {screen:'title', qi:0, picks:[], order:[]};
+const hot = window.claude && window.claude.hot;
+const boot = d => { if (d && d.screen) S = Object.assign(S, d); render(); };
+
+function shuffle(n){ const a=[...Array(n).keys()]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function totals(){
+  const t={p:0,a:0,s:0}, last={};
+  S.picks.forEach((ci,qi)=>{ const w=QS[qi].o[ci].w; for(const k in w){ t[k]+=w[k]; if(w[k]) last[k]=w[k]; } });
+  return {t,last};
+}
+function result(){
+  const {t,last}=totals();
+  return AX.map(a=>{ const v=t[a.k]||last[a.k]||1; return v>0?a.pos:a.neg; }).join('');
+}
+function axisMax(k,sign){ return QS.reduce((s,q)=>s+Math.max(...q.o.map(o=>sign*(o.w[k]||0))),0); }
+
+/* ---------- 音效（Web Audio 即時合成） ---------- */
+const Snd = (() => {
+  let ac=null, on=true, rain=null;
+  const ctx = () => { if(!ac){ try{ ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac&&ac.state==='suspended') ac.resume(); return ac; };
+  function tone(f, t0, d, type='sine', g=.12){ const a=ctx(); if(!a||!on) return; const o=a.createOscillator(), v=a.createGain(); o.type=type; o.frequency.value=f; v.gain.setValueAtTime(0,a.currentTime+t0); v.gain.linearRampToValueAtTime(g,a.currentTime+t0+.01); v.gain.exponentialRampToValueAtTime(.0001,a.currentTime+t0+d); o.connect(v).connect(a.destination); o.start(a.currentTime+t0); o.stop(a.currentTime+t0+d+.05); }
+  function noise(d, g, freq){ const a=ctx(); if(!a) return null; const b=a.createBuffer(1,a.sampleRate*d,a.sampleRate), ch=b.getChannelData(0); for(let i=0;i<ch.length;i++) ch[i]=Math.random()*2-1; const s=a.createBufferSource(); s.buffer=b; const f=a.createBiquadFilter(); f.type='lowpass'; f.frequency.value=freq; const v=a.createGain(); v.gain.value=g; s.connect(f).connect(v).connect(a.destination); return {s,v}; }
+  return {
+    pick(){ tone(660,0,.18,'triangle',.1); tone(990,.07,.25,'triangle',.08); },
+    stamp(){ if(!on) return; const n=noise(.12,.35,600); if(n){ n.s.start(); } tone(110,0,.15,'sine',.25); },
+    chime(){ tone(784,0,.6,'sine',.09); tone(622,.45,.9,'sine',.09); },
+    done(){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.11,.5,'triangle',.08)); },
+    rain(want){ const a=ctx(); if(want&&on&&a&&!rain){ const n=noise(2,.05,1200); if(!n) return; n.s.loop=true; n.s.start(); rain=n; } else if((!want||!on)&&rain){ try{rain.s.stop();}catch(e){} rain=null; } },
+    toggle(){ on=!on; if(!on) this.rain(false); return on; },
+    get on(){ return on; },
+  };
+})();
+
+/* ---------- 像素場景（192×108 畫布放大） ---------- */
+const W=192, H=108;
+let cv=null, cx=null, sceneKey='title', raf=0, t0=performance.now();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const R=(x,y,w,h,c)=>{ cx.fillStyle=c; cx.fillRect(Math.round(x),Math.round(y),w,h); };
+const hash=(n)=>{ const s=Math.sin(n*127.1)*43758.5453; return s-Math.floor(s); };
+const SPR = {
+  stand:['..hhhh..','.hhhhhh.','.hsesesh'.slice(0,8),'..ssss..','.jjjjjj.','sjjjjjjs','sjjjjjjs','.jjjjjj.','.pp..pp.','.pp..pp.','.kk..kk.'],
+  walk:['..hhhh..','.hhhhhh.','.hsesesh'.slice(0,8),'..ssss..','.jjjjjj.','sjjjjjjs','sjjjjjjs','.jjjjjj.','..pppp..','.pp..pp.','kk....kk'],
+  sit:['..hhhh..','.hhhhhh.','.hsesesh'.slice(0,8),'..ssss..','.jjjjjj.','sjjjjjjs','sjjjjjjs','.jjjjjj.','.pppppp.','.pp..pp.','........'],
+};
+const SC={h:'#2a1d18',s:'#f0c7a0',e:'#2a1d18',j:'#d8b25a',p:'#3b4a63',k:'#1b1b1b',b:'#7a4a2a'};
+function person(x,y,pose='stand',flipX=false,pack=true){
+  const m=SPR[pose]; m.forEach((row,r)=>{ [...row].forEach((ch,c)=>{ if(ch==='.') return; const cc=flipX?7-c:c; R(x+cc,y+r,1,1,SC[ch]); }); });
+  if(pack){ const bx=flipX?x+8:x-2; R(bx,y+4,2,4,SC.b); }
+}
+function sky(top,bot,hz){ for(let y=0;y<hz;y++){ const k=y/hz; cx.fillStyle=mix(top,bot,k); cx.fillRect(0,y,W,1); } }
+function mix(a,b,k){ const pa=parseInt(a.slice(1),16), pb=parseInt(b.slice(1),16); const r=(pa>>16)+(((pb>>16)-(pa>>16))*k), g=((pa>>8)&255)+((((pb>>8)&255)-((pa>>8)&255))*k), bl=(pa&255)+(((pb&255)-(pa&255))*k); return `rgb(${r|0},${g|0},${bl|0})`; }
+function stars(n,maxY,t,seed=1){ for(let i=0;i<n;i++){ const x=hash(i*3.1+seed)*W, y=hash(i*7.7+seed)*maxY; const tw=reduce?1:(Math.sin(t*2+i)+1)/2; R(x,y,1,1,tw>.5?'#ffffff':'#8aa0c8'); } }
+function skyline(base,col,lit,t,seed){ let x=0,i=0; while(x<W){ const w=8+Math.floor(hash(i+seed)*14), h=14+Math.floor(hash(i*2.3+seed)*30); R(x,base-h,w,h,col); if(lit) for(let yy=base-h+3;yy<base-2;yy+=4) for(let xx=x+2;xx<x+w-2;xx+=3){ if(hash(xx*1.3+yy*.7+seed)>.55) R(xx,yy,1,2, hash(xx+yy+Math.floor(t*.3))>.97?'#3a3a2a':'#f3d47a'); } x+=w+1; i++; } }
+
+const SCENES = {
+  title(t){
+    sky('#0f1d3a','#3c3a6b',80); stars(60,70,t);
+    R(150,14,10,10,'#f4ead0'); R(152,14,8,2,'#0f1d3a'); // moon
+    const px = reduce?110:((t*14)%260)-40;
+    R(px,30,22,3,'#e8edf2'); R(px+6,26,8,4,'#e8edf2'); R(px+6,33,8,3,'#c9d2dc'); R(px+18,27,4,3,'#e8edf2');
+    R(px+22,31,1,1,(Math.floor(t*3)%2)?'#ff4d4d':'#3c3a6b');
+    skyline(88,'#1a2340',true,t,3); R(0,88,W,20,'#121a2c');
+    for(let x=4;x<W;x+=12) R(x,97,4,1,(Math.floor(t*4+x/12)%3===0)?'#f3d47a':'#55607a');
+    person(90,77,'stand');
+  },
+  night(t){
+    R(0,0,W,H,'#253246'); R(0,80,W,28,'#5a3e2e'); for(let x=0;x<W;x+=16) R(x,80,1,28,'#4a3326');
+    R(18,14,46,34,'#0f1d3a'); stars(14,30,t,9); R(48,20,7,7,'#f4ead0'); R(18,14,46,2,'#8a7a66'); R(18,46,46,2,'#8a7a66'); R(40,14,2,34,'#8a7a66'); R(18,14,2,34,'#8a7a66'); R(62,14,2,34,'#8a7a66');
+    // clock
+    R(92,16,14,14,'#e8e0cc'); R(98,18,2,6,'#222'); const a=t*.5; R(99+Math.round(Math.cos(a)*4),23+Math.round(Math.sin(a)*4),1,1,'#c0473a');
+    // desk + lamp glow
+    R(140,58,46,4,'#7a5a40'); R(144,62,3,18,'#6a4a33'); R(180,62,3,18,'#6a4a33');
+    cx.fillStyle='rgba(243,212,122,.16)'; cx.beginPath(); cx.moveTo(166,40); cx.lineTo(150,58); cx.lineTo(186,58); cx.fill();
+    R(164,34,8,6,'#d8b25a'); R(167,40,2,18,'#555');
+    // open suitcase
+    R(54,72,48,14,'#2e5c8c'); R(54,62,48,10,'#244a72'); R(57,74,12,8,'#e8e0cc'); R(71,74,10,8,'#c0473a'); R(83,74,16,8,'#d8b25a'); R(60,64,40,2,'#1a3552');
+    person(112,69, Math.floor(t*2)%2&&!reduce?'walk':'stand', true);
+  },
+  airport(t){
+    R(0,0,W,H,'#cfd5d0'); R(0,8,W,52,'#9cc3e0');
+    for(let x=0;x<W;x+=24) R(x,8,2,52,'#6f7b80');
+    R(0,58,W,3,'#6f7b80');
+    // parked plane
+    R(70,36,80,10,'#f3f5f7'); R(146,38,10,6,'#f3f5f7'); R(66,30,10,8,'#f3f5f7'); R(96,46,30,4,'#d5dbe0'); R(100,36,4,2,'#2e5c8c'); for(let x=80;x<140;x+=6) R(x,39,2,2,'#2e5c8c');
+    // departure board
+    R(8,12,52,30,'#1c2023'); for(let r=0;r<4;r++){ R(11,15+r*6,26,3,'#d8a64a'); R(40,15+r*6,16,3, r===1&&(Math.floor(t*2)%2||reduce)?'#e05a4a':'#d8a64a'); }
+    // seats
+    R(0,61,W,47,'#b9bfba'); for(let x=10;x<180;x+=14){ R(x,76,10,6,'#2e5c8c'); R(x,72,10,4,'#3a6c9e'); R(x+4,82,2,6,'#555'); }
+    person(120,74,'stand'); R(130,79,6,8,'#c0473a'); R(132,77,2,2,'#333');
+  },
+  arrive(t){
+    sky('#ffd9a0','#ffefcf',60); R(28,10,12,12,'#fff4d6');
+    const cols=['#d97a5a','#7fa88f','#e0b45a','#8f8fb8','#c46a6a','#6f9fb8'];
+    let x=0,i=0; while(x<W){ const w=20+Math.floor(hash(i+5)*14), h=30+Math.floor(hash(i*3+1)*30); R(x,78-h,w,h,cols[i%cols.length]); for(let yy=78-h+4;yy<74;yy+=7) for(let xx=x+3;xx<x+w-3;xx+=6) R(xx,yy,3,4,'#fff3d8'); R(x+w-5,78-h+6,4,14,cols[(i+3)%cols.length]); x+=w+2; i++; }
+    R(0,78,W,30,'#5b5f66'); for(let xx=0;xx<W;xx+=20) R(xx,92,10,2,'#e8e0cc'); R(0,78,W,3,'#8a8f96');
+    const bx = reduce?40:((t*20)%300)-80; R(bx,82,46,14,'#2f8f6f'); R(bx,82,46,3,'#d8b25a'); for(let k=0;k<5;k++) R(bx+4+k*8,85,6,5,'#bfe3f0'); R(bx+6,96,6,3,'#222'); R(bx+34,96,6,3,'#222');
+    person(150,67,'stand');
+  },
+  lunch(t){
+    R(0,0,W,H,'#3a2a24');
+    for(let x=0;x<W;x+=16) R(x,6,8,16,'#c0473a'), R(x+8,6,8,16,'#efe6d6');
+    R(0,22,W,3,'#8a4a2a');
+    for(let i=0;i<5;i++){ const lx=18+i*38, sw=reduce?0:Math.round(Math.sin(t*1.5+i)*1.5); R(lx+sw,28,8,10,'#e05a3a'); R(lx+sw,30,8,2,'#f3c06a'); R(lx+3,25,2,3,'#222'); }
+    R(10,44,56,22,'#e8dcc0'); for(let r=0;r<4;r++) R(14,48+r*4,30+(r%2)*10,2,'#6a4a33');
+    R(0,70,W,8,'#a0703f'); R(0,78,W,30,'#5a3e2e');
+    for(let i=0;i<3;i++){ const bx=86+i*30; R(bx,64,14,6,'#efe6d6'); R(bx+1,63,12,2,'#d8b25a'); for(let k=0;k<3;k++){ const sy=(t*10+k*6+i*3)%16; if(!reduce) R(bx+3+k*4,60-sy,1,2,'rgba(255,255,255,.5)'); } }
+    for(let i=0;i<4;i++) R(30+i*40,88,10,3,'#c0473a'), R(34+i*40,91,2,10,'#333');
+    person(60,77,'sit');
+  },
+  rain(t){
+    sky('#5a6670','#8a96a0',70);
+    skyline(76,'#4a555e',true,t,11); R(0,76,W,32,'#3c444b');
+    for(let i=0;i<5;i++){ const px=20+i*38; const r=reduce?3:((t*3+i)%1)*6; R(px-r,92,r*2+2,1,'#9fb0bd'); }
+    for(let i=0;i<90;i++){ const x=(hash(i)*W + (reduce?0:t*20))%W, y=(hash(i*5.1)*H + (reduce?0:t*120))%H; R(x,y,1,3,'rgba(210,225,240,.6)'); }
+    // umbrella
+    R(96,58,22,3,'#c0473a'); R(99,56,16,2,'#c0473a'); R(103,55,8,1,'#c0473a'); R(106,61,1,10,'#333');
+    person(103,66, Math.floor(t*2)%2&&!reduce?'walk':'stand');
+  },
+  last(t){
+    sky('#0b1430','#2a2a5a',70); stars(70,55,t,4); R(30,12,9,9,'#f4ead0');
+    for(let i=0;i<160;i++){ const x=hash(i*1.7)*W, y=66+hash(i*2.9)*18; const on=reduce||hash(i+Math.floor(t*1.5))>.15; if(on) R(x,y,1,1, ['#f3d47a','#ffffff','#e0805a','#9fd0ff'][i%4]); }
+    R(0,84,W,24,'#121a2c'); R(0,82,W,2,'#6f7b80'); for(let x=4;x<W;x+=10) R(x,76,1,6,'#6f7b80'); R(0,76,W,1,'#6f7b80');
+    person(120,73,'sit',true);
+  },
+};
+function loop(now){
+  if(!cx){ raf=0; return; }
+  const t=(now-t0)/1000; (SCENES[sceneKey]||SCENES.title)(t);
+  if(!reduce) raf=requestAnimationFrame(loop); else raf=0;
+}
+function mountScene(el,key){
+  cv=el; cx=cv.getContext('2d'); cv.width=W; cv.height=H; cx.imageSmoothingEnabled=false; sceneKey=key;
+  Snd.rain(key==='rain');
+  if(!raf) raf=requestAnimationFrame(loop);
+}
+
+/* ---------- 畫面 ---------- */
+const $view = document.getElementById('view');
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let typer=0;
+
+function render(){
+  cancelAnimationFrame(raf); raf=0; cx=null; clearInterval(typer);
+  window.scrollTo({top:0});
+  if(S.screen==='title') return renderTitle();
+  if(S.screen==='play') return renderQ();
+  return renderResult();
+}
+
+function renderTitle(){
+  $view.innerHTML = `
+  <section class="hero">
+    <div class="scene"><canvas id="cv" aria-label="夜空中飛過的飛機"></canvas><div class="tag">BOARDING 00:00</div></div>
+    <div class="pass">
+      <div class="main">
+        <div class="lbl">BOARDING PASS · 登機證</div>
+        <div class="fromto"><span>TPE</span><span>✈</span><span class="unk">???</span></div>
+        <h1>出發吧！你是哪種旅人？</h1>
+        <p>跟著一趟四天的旅程走過 6 個場景、回答 12 題，看看你是 8 種旅人中的哪一種，再領一份目的地與城邦選書。</p>
+      </div>
+      <div class="side"><span>GATE<br><b>B7</b></span><span>SEAT<br><b>12A</b></span><span>約 3 分鐘</span></div>
+    </div>
+    <button class="go" id="go" type="button">開始登機 <span aria-hidden="true">→</span></button>
+    <div class="sec" style="gap:8px">
+      <div class="lbl" style="color:var(--mist)">8 種旅人 · 三個軸：計畫／隨興、冒險／舒適、揪團／獨旅</div>
+      <div class="stamps">${ORDER.map(c=>`<div class="mini"><b>${c}</b><span>${esc(TYPES[c].name)}</span></div>`).join('')}</div>
+    </div>
+  </section>`;
+  mountScene(document.getElementById('cv'),'title');
+  document.getElementById('go').onclick = () => { Snd.chime(); S={screen:'play',qi:0,picks:[],order:QS.map(q=>shuffle(q.o.length))}; render(); };
+}
+
+function routeHTML(stopIdx){
+  const pct = (stopIdx/5)*83.34;
+  return `<div class="route" aria-label="旅程進度：第 ${stopIdx+1} 站，共 6 站"><div class="fill" style="width:${pct}%"></div>
+    ${STOPS.map((s,i)=>`<div class="stop ${i<stopIdx?'done':''} ${i===stopIdx?'now':''}"><i></i>${esc(s.name)}</div>`).join('')}</div>`;
+}
+
+function renderQ(){
+  const q=QS[S.qi], st=STOPS[q.stop], order=S.order[S.qi]||[0,1,2];
+  const firstOfStop = S.qi===0 || QS[S.qi-1].stop!==q.stop;
+  $view.innerHTML = `
+  <section class="q">
+    ${routeHTML(q.stop)}
+    <div class="scene"><canvas id="cv" aria-label="${esc(st.name)}的像素場景"></canvas><div class="tag">${esc(st.tag)}</div></div>
+    <div class="eyebrow">STOP ${String(q.stop+1).padStart(2,'0')} · ${esc(st.code)} · Q${String(S.qi+1).padStart(2,'0')}/12</div>
+    <h2 id="qt" aria-live="polite"></h2>
+    <div class="opts">${order.map((ci,k)=>`<button class="ticket" type="button" data-ci="${ci}"><span class="stub">${'ABC'[k]}</span><span class="txt">${esc(q.o[ci].t)}</span></button>`).join('')}</div>
+    <div class="qfoot"><button class="ghost" id="back" type="button" ${S.qi===0?'hidden':''}>← 上一題</button><span>按 1、2、3 也能作答</span></div>
+  </section>`;
+  mountScene(document.getElementById('cv'),st.key);
+  if(firstOfStop && S.qi>0 && st.key==='airport') Snd.chime();
+  const qt=document.getElementById('qt'), btns=[...document.querySelectorAll('.ticket')];
+  const show=()=>btns.forEach((b,i)=>setTimeout(()=>b.classList.add('in'), reduce?0:i*90));
+  if(reduce){ qt.textContent=q.q; show(); }
+  else { let n=0; qt.onclick=()=>{ n=q.q.length; }; typer=setInterval(()=>{ n+=1; qt.textContent=q.q.slice(0,n); if(n>=q.q.length){ clearInterval(typer); show(); } },28); setTimeout(show,q.q.length*28*.6); }
+  let locked=false;
+  btns.forEach(b=>b.onclick=()=>{
+    if(locked) return; locked=true; b.classList.add('picked','in'); Snd.pick(); setTimeout(()=>Snd.stamp(),120);
+    S.picks[S.qi]=+b.dataset.ci; S.picks.length=S.qi+1;
+    setTimeout(()=>{ if(S.qi<QS.length-1){ S.qi++; } else { S.screen='result'; Snd.done(); } render(); }, reduce?150:520);
+  });
+  document.getElementById('back').onclick=()=>{ if(S.qi>0){ S.qi--; S.picks.length=S.qi; render(); } };
+}
+
+function axisRows(){
+  const {t}=totals(); const code=result();
+  return AX.map((a,j)=>{
+    const v=t[a.k], max = v>=0?axisMax(a.k,1):axisMax(a.k,-1);
+    const pct=Math.min(50, Math.round(Math.abs(v)/Math.max(1,max)*50)+6);
+    const posWin = code[j]===a.pos;
+    const left = posWin?50:50-pct;
+    return `<div class="axis"><span class="l ${posWin?'on':'off'}">${a.posL}</span><span class="track"><i style="left:${posWin?50-pct:50}%;width:${pct}%"></i></span><span class="${posWin?'off':'on'}">${a.negL}</span></div>`;
+  }).join('');
+}
+function bookHTML(b){
+  const col=PUB_COLOR[b.pub]||'#4d5b6a';
+  return `<a class="book" href="${esc(b.url)}" target="_blank" rel="noopener"><span class="spine" style="background:${col}">${esc(b.pub.replace(/出版社?$/,''))}</span>
+    <div><div class="bt">${esc(b.title)}</div><div class="bm">${esc(b.pub)}・${esc(b.author)}・${esc((b.date||'').slice(0,7))}</div><div class="bb">${esc(b.blurb)}</div><div class="go-link">到城邦讀書花園看這本書 ↗</div></div></a>`;
+}
+
+function renderResult(){
+  const code=result(), T=TYPES[code], buddy=flip(code,[0]), clash=flip(code,[1,2]);
+  const top=T.books.slice(0,3), rest=T.books.slice(3);
+  const destName=d=>d.replace(/（.*?）/,''), destTag=d=>(d.match(/（(.*?)）/)||[])[1]||'';
+  $view.innerHTML = `
+  <section class="hero" style="gap:14px">
+    <article class="visa" aria-label="你的旅人類型">
+      <div class="vhead">
+        <div style="min-width:0"><div class="lbl">TRAVELER TYPE · 旅人類型</div><div class="code" style="margin-top:10px">${code}</div><h2 class="vname">${esc(T.name)}</h2><div class="vaxes">${esc(T.axes)}</div></div>
+        <div class="seal" aria-hidden="true"><div>${esc(T.name)}<small>APPROVED</small></div></div>
+      </div>
+      <p class="vdesc">${esc(T.desc)}</p>
+      <div class="sec"><h3>PROFILE<span>你的三個旅行傾向</span></h3>${axisRows()}</div>
+      <div class="sec"><h3>NEXT DESTINATION<span>適合你的下一站</span></h3>
+        <div class="dests">${T.dest.map(d=>`<div class="dest"><span class="lbl">${esc(destTag(d))}</span><b>${esc(destName(d))}</b></div>`).join('')}</div></div>
+      <div class="sec"><h3>READING LIST<span>從城邦書目為你挑的書</span></h3>
+        <div class="books">${top.map(bookHTML).join('')}<div id="rest" hidden>${rest.map(bookHTML).join('')}</div></div>
+        ${rest.length?`<button class="more" id="more" type="button">再看 ${rest.length} 本</button>`:''}</div>
+      <div class="sec"><h3>TRAVEL BUDDY<span>旅伴配對</span></h3>
+        <div class="pair">
+          <div><span class="lbl">最合拍</span><b>${esc(TYPES[buddy].name)}</b><p>你們只差在要不要排行程，剛好一個規劃、一個製造驚喜。</p></div>
+          <div><span class="lbl">最容易吵架</span><b>${esc(TYPES[clash].name)}</b><p>你們對「好玩」的定義不太一樣，出發前先講好各自的底線。</p></div>
+        </div></div>
+      <div class="sec"><h3>TIP<span>給你的旅行小提醒</span></h3><p style="margin:0">${esc(TIPS[code])}</p></div>
+    </article>
+    <div class="acts">
+      <button class="primary" id="save" type="button" hidden>下載旅人卡</button>
+      <button class="primary" id="copy" type="button">複製我的結果</button>
+      <button class="secondary" id="again" type="button">再玩一次</button>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="sec" style="gap:8px"><div class="lbl" style="color:var(--mist)">全部 8 種旅人</div>
+      <div class="stamps">${ORDER.map(c=>`<div class="mini ${c===code?'me':''}"><b>${c}</b><span>${esc(TYPES[c].name)}</span></div>`).join('')}</div></div>
+  </section>`;
+  const toast=m=>{ document.getElementById('toast').textContent=m; };
+  const more=document.getElementById('more'); if(more) more.onclick=()=>{ const r=document.getElementById('rest'); r.hidden=!r.hidden; r.style.display=r.hidden?'':'contents'; more.textContent=r.hidden?`再看 ${rest.length} 本`:'收起'; };
+  document.getElementById('again').onclick=()=>{ S={screen:'title',qi:0,picks:[],order:[]}; render(); };
+  const shareText=`我是「${T.name}」${code}！${T.desc}\n推薦目的地：${T.dest.map(destName).join('、')}\n城邦選書：${top.map(b=>'《'+b.title.split(/[：:]/)[0]+'》').join('、')}\n你是哪種旅人？`;
+  document.getElementById('copy').onclick=async()=>{ try{ await navigator.clipboard.writeText(shareText); toast('已複製，可以貼到 LINE 或 IG 了。'); }catch(e){ toast('這個視窗不允許複製，請手動選取上方文字。'); } };
+  const saveBtn=document.getElementById('save');
+  getDownloads().then(dl=>{ if(!dl) return; saveBtn.hidden=false; saveBtn.onclick=async()=>{
+    saveBtn.disabled=true; toast('正在產生旅人卡……');
+    try{ const blob=await drawCard(code,T); await dl.save({filename:`旅人卡_${T.name}_${code}.png`, data:blob}); toast('旅人卡已儲存。'); }
+    catch(e){ toast(e&&e.code==='declined'?'已取消下載。':'這裡無法下載，可以改用「複製我的結果」。'); }
+    finally{ saveBtn.disabled=false; }
+  }; });
+}
+
+/* ---------- 旅人卡 PNG（1080×1350） ---------- */
+let dlP=null;
+function getDownloads(){ if(!dlP) dlP = (window.claude && window.claude.use) ? window.claude.use('downloads').catch(()=>null) : Promise.resolve(webDownloads); return dlP; }
+const webDownloads = { save({filename,data}){ const u=URL.createObjectURL(data), a=document.createElement('a'); a.href=u; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); return Promise.resolve({status:'saved'}); } };
+async function drawCard(code,T){
+  try{ await Promise.all(['700 60px "LXGW WenKai TC"','400 60px "VT323"','500 30px "Noto Sans TC"'].map(f=>document.fonts.load(f,'旅人ABC'))); }catch(e){}
+  const c=document.createElement('canvas'); c.width=1080; c.height=1350; const g=c.getContext('2d');
+  const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  g.fillStyle=css('--cover'); g.fillRect(0,0,1080,1350);
+  g.fillStyle=css('--paper'); roundRect(g,60,60,960,1230,40); g.fill();
+  g.strokeStyle='rgba(46,92,140,.08)'; g.lineWidth=3; for(let x=-1350;x<1080;x+=26){ g.beginPath(); g.moveTo(x,60); g.lineTo(x+1230,1290); g.stroke(); }
+  g.fillStyle=css('--ink-soft'); g.font='400 40px "VT323", monospace'; g.fillText('TRAVELER TYPE · 旅人類型',120,160);
+  g.fillStyle=css('--ink'); g.font='400 260px "VT323", monospace'; g.fillText(code,110,390);
+  g.font='700 96px "LXGW WenKai TC", serif'; g.fillText(T.name,120,520);
+  g.fillStyle=css('--ink-soft'); g.font='500 34px "Noto Sans TC", sans-serif'; g.fillText(T.axes,124,580);
+  g.save(); g.translate(830,300); g.rotate(-0.25); g.strokeStyle=css('--stamp'); g.lineWidth=8; g.beginPath(); g.arc(0,0,120,0,Math.PI*2); g.stroke(); g.lineWidth=3; g.beginPath(); g.arc(0,0,104,0,Math.PI*2); g.stroke();
+  g.fillStyle=css('--stamp'); g.textAlign='center'; g.font='700 44px "LXGW WenKai TC", serif'; g.fillText(T.name,0,6); g.font='400 34px "VT323", monospace'; g.fillText('APPROVED',0,48); g.restore();
+  g.fillStyle=css('--ink'); g.font='400 46px "LXGW WenKai TC", serif'; wrap(g,T.desc,120,680,840,68);
+  g.fillStyle=css('--stamp-blue'); g.font='400 40px "VT323", monospace'; g.fillText('NEXT DESTINATION',120,880);
+  T.dest.forEach((d,i)=>{ const x=120+i*290; g.strokeStyle='#c8cdbd'; g.lineWidth=3; roundRect(g,x,905,270,130,20); g.stroke(); g.fillStyle=css('--ink-soft'); g.font='400 30px "VT323", monospace'; g.fillText((d.match(/（(.*?)）/)||[])[1]||'',x+22,950); g.fillStyle=css('--ink'); g.font='700 40px "LXGW WenKai TC", serif'; wrap(g,d.replace(/（.*?）/,''),x+22,1004,236,46); });
+  g.fillStyle=css('--stamp-blue'); g.font='400 40px "VT323", monospace'; g.fillText('READING LIST',120,1110);
+  g.fillStyle=css('--ink'); g.font='500 32px "Noto Sans TC", sans-serif'; T.books.slice(0,2).forEach((b,i)=>{ g.fillText('《'+clip(g,b.title.split(/[：:]/)[0],780)+'》',120,1160+i*48); });
+  g.fillStyle=css('--cover'); g.font='700 34px "LXGW WenKai TC", serif'; g.fillText('出發吧！你是哪種旅人？',120,1262); g.textAlign='right'; g.font='400 32px "VT323", monospace'; g.fillText('TPE ✈ '+code,960,1262);
+  return new Promise(res=>c.toBlob(res,'image/png'));
+}
+function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function wrap(g,text,x,y,maxW,lh){ let line=''; for(const ch of text){ if(g.measureText(line+ch).width>maxW){ g.fillText(line,x,y); line=ch; y+=lh; } else line+=ch; } if(line) g.fillText(line,x,y); }
+function clip(g,s,maxW){ if(g.measureText(s).width<=maxW) return s; while(s.length&&g.measureText(s+'…').width>maxW) s=s.slice(0,-1); return s+'…'; }
+
+/* ---------- 控制 ---------- */
+const sndBtn=document.getElementById('snd');
+sndBtn.onclick=()=>{ const on=Snd.toggle(); sndBtn.textContent='音效 '+(on?'開':'關'); sndBtn.setAttribute('aria-pressed',on); if(on&&sceneKey==='rain'&&S.screen==='play') Snd.rain(true); };
+document.addEventListener('keydown',e=>{ if(S.screen!=='play') return; const n='123'.indexOf(e.key); if(n>=0){ const b=document.querySelectorAll('.ticket')[n]; if(b) b.click(); } });
+
+if(hot && hot.snapshot) hot.snapshot(()=>({screen:S.screen,qi:S.qi,picks:S.picks,order:S.order}));
+if(hot && hot.ready) hot.ready(boot); else boot(hot && hot.data);
+})();
+</script>
+</body>
+</html>
